@@ -2,8 +2,6 @@ module main.go
 
 go 1.23
 
-toolchain go1.24.6
-
 require (
 	github.com/joho/godotenv v1.5.1
 	github.com/matu6968/s3-client v0.0.0-20250907132815-7a15e87c8e91
