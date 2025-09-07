@@ -1,16 +1,16 @@
 # S3 Client Web
 
-This is a WebGUI for [s3-client](https://git.fluffy.pw/leafus/s3-client)
+This is a WebGUI for [s3-client](https://github.com/matu6968/s3-client)
 
 ## Prerequisites
 
-- Go (1.23.1 or later)
+- Go (1.23 or later)
 
 ## Installation
 
 1. Clone the repository:
    ```
-   git clone https://git.fluffy.pw/leafus/s3-client-web
+   git clone https://github.com/matu6968/s3-client-web
    ```
 
 2. Go to the project directory:
@@ -33,6 +33,4 @@ PORT=8080
 
 ### For this to even work
 
-You need to download a latest linux binary release of [s3-client](https://git.fluffy.pw/leafus/s3-client) from the "Releases" tab for your architecture
-
-and put the binary in the "bin" folder !IMPORTANT! you need to rename the file to just s3-client and create s3config.toml file, the configuration of that is in the [s3-client](https://git.fluffy.pw/leafus/s3-client) repository
+`s3-client` is now statically linked, you just need to configure `s3-client` as usual as per [the instructions](https://github.com/matu6968/s3-client?tab=readme-ov-file#configuration)

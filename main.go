@@ -8,10 +8,11 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
+	"context"
 
 	"github.com/joho/godotenv"
+	"github.com/matu6968/s3-client/s3client"
 )
 
 func main() {
@@ -87,28 +88,27 @@ func handleUpload(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
 		return
 	}
-
-	s3ClientPath := filepath.Join(".", "bin", "s3-client")
-	configFilePath := filepath.Join(".", "bin", "s3config.toml")
-	cmd := exec.Command(s3ClientPath, "-config", configFilePath, "-directory", directory, "-file", tempFile.Name())
-
-	cmd.Args = append(cmd.Args, "-overwrite")
-
-	output, err := cmd.CombinedOutput()
+	ctx := context.TODO()
+	client, err := s3client.LoadClient(ctx, "", true)
 	if err != nil {
-		log.Printf("Error uploading file: %s\n", output)
+		log.Fatal("Error initializing client:", err)
+		return
+	}
+	output, err := client.UploadFile(ctx, tempFile.Name(), directory, true)
+	if err != nil {
+		log.Printf("Error uploading file: %s\n", err)
 		json.NewEncoder(w).Encode(map[string]string{
-			"error": fmt.Sprintf("Error uploading file to S3: %s", output),
+			"error": fmt.Sprintf("Error uploading file to S3: %s", err),
 		})
 		return
 	}
-
+	
 	response := struct {
 		Message string `json:"message"`
 		Output  string `json:"output"`
 	}{
 		Message: fmt.Sprintf("File %s uploaded successfully", handler.Filename),
-		Output:  string(output),
+		Output:  string(fmt.Sprintf("Uploaded:", output)),
 	}
 
 	json.NewEncoder(w).Encode(response)
@@ -133,25 +133,25 @@ func handleDelete(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{"error": "Filename is required"})
 		return
 	}
-
-	s3ClientPath := filepath.Join(".", "bin", "s3-client")
-	configFilePath := filepath.Join(".", "bin", "s3config.toml")
-	cmd := exec.Command(s3ClientPath, "-config", configFilePath, "-delete", filename)
-	output, err := cmd.CombinedOutput()
+	ctx := context.TODO()
+	client, err := s3client.LoadClient(ctx, "", true)
 	if err != nil {
-		log.Printf("Error deleting file: %s\n", output)
+		log.Fatal("Error initializing client:", err)
+		return
+	}
+	err = client.DeleteFile(ctx, filename)
+	if err != nil {
+		log.Printf("Error deleting file: %s\n", err)
 		json.NewEncoder(w).Encode(map[string]string{
-			"error": fmt.Sprintf("Error deleting file from S3: %s", output),
+			"error": fmt.Sprintf("Error deleting file from S3: %s", err),
 		})
 		return
 	}
 
 	response := struct {
 		Message string `json:"message"`
-		Output  string `json:"output"`
 	}{
 		Message: fmt.Sprintf("File %s deleted successfully from S3", filename),
-		Output:  string(output),
 	}
 
 	json.NewEncoder(w).Encode(response)
